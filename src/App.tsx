@@ -2,15 +2,15 @@ import { useState } from "react";
 import {
   createMatch,
   matchWinner,
-  otherTeam,
   scorePoint,
   setsWon,
   type MatchState,
   type TeamKey,
 } from "./scoring";
+import { saveMatch, type SavedMatch } from "./history";
 import "./App.css";
 
-type Screen = "setup" | "teams" | "match";
+type Screen = "setup" | "teams" | "match" | "end";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("setup");
@@ -19,6 +19,7 @@ function App() {
   const [teamB, setTeamB] = useState<[number, number]>([2, 3]);
   const [match, setMatch] = useState<MatchState>(createMatch());
   const [history, setHistory] = useState<MatchState[]>([]);
+  const [finishedMatch, setFinishedMatch] = useState<SavedMatch | null>(null);
 
   const setName = (index: number, value: string) => {
     setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
@@ -51,7 +52,25 @@ function App() {
 
   const addPoint = (team: TeamKey) => {
     setHistory((h) => [...h, match]);
-    setMatch((m) => scorePoint(m, team));
+    const updated = scorePoint(match, team);
+    setMatch(updated);
+
+    const winner = matchWinner(updated.sets);
+    if (winner) {
+      const result: SavedMatch = {
+        id: crypto.randomUUID(),
+        date: new Date().toISOString(),
+        teamA: teamName("a"),
+        teamB: teamName("b"),
+        winner,
+        setsA: setsWon(updated.sets, "a"),
+        setsB: setsWon(updated.sets, "b"),
+        sets: updated.sets,
+      };
+      saveMatch(result);
+      setFinishedMatch(result);
+      setScreen("end");
+    }
   };
 
   const undo = () => {
@@ -66,6 +85,7 @@ function App() {
   const newMatch = () => {
     setMatch(createMatch());
     setHistory([]);
+    setFinishedMatch(null);
     setScreen("setup");
     setNames(["", "", "", ""]);
   };
@@ -74,8 +94,6 @@ function App() {
     const idx = team === "a" ? teamA : teamB;
     return `${names[idx[0]]} / ${names[idx[1]]}`;
   };
-
-  const winner = matchWinner(match.sets);
 
   return (
     <div className="app">
@@ -146,13 +164,6 @@ function App() {
 
       {screen === "match" && (
         <div className="card">
-          {winner && (
-            <div className="winner-banner">
-              🏆 {teamName(winner)} wins {setsWon(match.sets, winner)}-
-              {setsWon(match.sets, otherTeam(winner))}!
-            </div>
-          )}
-
           <div className="scoreboard">
             <div className="team-score">
               <div className="team-label">{teamName("a")}</div>
@@ -173,16 +184,14 @@ function App() {
             </div>
           </div>
 
-          {!winner && (
-            <div className="point-buttons">
-              <button className="point-btn" onClick={() => addPoint("a")}>
-                +1 {teamName("a")}
-              </button>
-              <button className="point-btn" onClick={() => addPoint("b")}>
-                +1 {teamName("b")}
-              </button>
-            </div>
-          )}
+          <div className="point-buttons">
+            <button className="point-btn" onClick={() => addPoint("a")}>
+              +1 {teamName("a")}
+            </button>
+            <button className="point-btn" onClick={() => addPoint("b")}>
+              +1 {teamName("b")}
+            </button>
+          </div>
 
           {match.sets.length > 0 && (
             <div className="set-history">
@@ -207,6 +216,36 @@ function App() {
               Undo
             </button>
             <button className="secondary" onClick={newMatch}>
+              New Match
+            </button>
+          </div>
+        </div>
+      )}
+
+      {screen === "end" && finishedMatch && (
+        <div className="card">
+          <div className="winner-banner">
+            🏆{" "}
+            {finishedMatch.winner === "a"
+              ? finishedMatch.teamA
+              : finishedMatch.teamB}{" "}
+            wins {finishedMatch.setsA}-{finishedMatch.setsB}!
+          </div>
+
+          <div className="set-history">
+            <h3>Sets</h3>
+            <ul>
+              {finishedMatch.sets.map((s, i) => (
+                <li key={i}>
+                  Set {i + 1}: {s.a}-{s.b}
+                  {s.tiebreak ? ` (tiebreak ${s.tiebreak.a}-${s.tiebreak.b})` : ""}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="button-row">
+            <button className="primary" onClick={newMatch}>
               New Match
             </button>
           </div>
