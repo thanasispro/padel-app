@@ -30,7 +30,12 @@ function App() {
     setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
   };
 
-  const allNamesFilled = names.every((n) => n.trim().length > 0);
+  const trimmedNames = names.map((n) => n.trim());
+  const allNamesLongEnough = trimmedNames.every((n) => n.length > 3);
+  const allNamesUnique =
+    new Set(trimmedNames.map((n) => n.toLowerCase())).size ===
+    trimmedNames.length;
+  const allNamesValid = allNamesLongEnough && allNamesUnique;
 
   const startTeams = () => {
     setScreen("teams");
@@ -142,6 +147,9 @@ function App() {
       {screen === "setup" && (
         <div className="card">
           <h2>Players</h2>
+          <p className="hint">
+            Each name needs more than 3 letters and must be unique.
+          </p>
           <div className="teams-row">
             <div className="team-col">
               <h3>Team A</h3>
@@ -170,14 +178,14 @@ function App() {
           </div>
           <button
             className="primary"
-            disabled={!allNamesFilled}
+            disabled={!allNamesValid}
             onClick={startTeams}
           >
             Continue
           </button>
           <button
             className="secondary"
-            disabled={!allNamesFilled}
+            disabled={!allNamesValid}
             onClick={shuffleTeamAssignment}
           >
             Shuffle Teams
