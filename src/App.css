@@ -1,0 +1,190 @@
+.app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 16px 40px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hint {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.name-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 16px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.name-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+button {
+  font: inherit;
+  cursor: pointer;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.primary {
+  padding: 14px 16px;
+  font-size: 18px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+.secondary {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 16px;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.button-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.teams-row {
+  display: flex;
+  gap: 16px;
+}
+
+.team-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.team-col h3 {
+  margin: 0;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.player-chip {
+  padding: 12px;
+  font-size: 16px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--text-h);
+}
+
+.winner-banner {
+  padding: 14px;
+  border-radius: 10px;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  color: var(--text-h);
+  font-weight: 600;
+  font-size: 17px;
+  text-align: center;
+}
+
+.scoreboard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+
+.team-score {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.team-label {
+  font-size: 14px;
+  color: var(--text);
+  text-align: center;
+}
+
+.games {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--text-h);
+  line-height: 1;
+}
+
+.tb-tag {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.sets-summary {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.point-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.point-btn {
+  flex: 1;
+  padding: 22px 8px;
+  font-size: 17px;
+  font-weight: 600;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+}
+
+.set-history {
+  border-top: 1px solid var(--border);
+  padding-top: 8px;
+}
+
+.set-history h3 {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.set-history ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 15px;
+  color: var(--text-h);
+}
