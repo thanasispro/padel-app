@@ -87,7 +87,6 @@ function App() {
     setHistory([]);
     setFinishedMatch(null);
     setScreen("setup");
-    setNames(["", "", "", ""]);
   };
 
   const teamName = (team: TeamKey) => {
