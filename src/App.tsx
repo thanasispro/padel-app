@@ -7,19 +7,24 @@ import {
   type MatchState,
   type TeamKey,
 } from "./scoring";
-import { saveMatch, type SavedMatch } from "./history";
+import { getLastPlayers, saveMatch, type SavedMatch } from "./history";
 import "./App.css";
 
-type Screen = "setup" | "teams" | "match" | "end";
+type Screen = "setup" | "teams" | "match" | "end" | "newMatchOptions";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("setup");
-  const [names, setNames] = useState(["", "", "", ""]);
+  const [names, setNames] = useState<string[]>(
+    () => getLastPlayers() ?? ["", "", "", ""],
+  );
   const [teamA, setTeamA] = useState<[number, number]>([0, 1]);
   const [teamB, setTeamB] = useState<[number, number]>([2, 3]);
   const [match, setMatch] = useState<MatchState>(createMatch());
   const [history, setHistory] = useState<MatchState[]>([]);
   const [finishedMatch, setFinishedMatch] = useState<SavedMatch | null>(null);
+  const [preNewMatchScreen, setPreNewMatchScreen] = useState<"match" | "end">(
+    "match",
+  );
 
   const setName = (index: number, value: string) => {
     setNames((prev) => prev.map((n, i) => (i === index ? value : n)));
@@ -28,8 +33,6 @@ function App() {
   const allNamesFilled = names.every((n) => n.trim().length > 0);
 
   const startTeams = () => {
-    setTeamA([0, 1]);
-    setTeamB([2, 3]);
     setScreen("teams");
   };
 
@@ -57,11 +60,15 @@ function App() {
 
     const winner = matchWinner(updated.sets);
     if (winner) {
+      const teamAPlayers: [string, string] = [names[teamA[0]], names[teamA[1]]];
+      const teamBPlayers: [string, string] = [names[teamB[0]], names[teamB[1]]];
       const result: SavedMatch = {
         id: crypto.randomUUID(),
         date: new Date().toISOString(),
-        teamA: teamName("a"),
-        teamB: teamName("b"),
+        teamAPlayers,
+        teamBPlayers,
+        teamA: teamAPlayers.join(" / "),
+        teamB: teamBPlayers.join(" / "),
         winner,
         setsA: setsWon(updated.sets, "a"),
         setsB: setsWon(updated.sets, "b"),
@@ -82,10 +89,40 @@ function App() {
     });
   };
 
-  const newMatch = () => {
+  const openNewMatchOptions = () => {
+    setPreNewMatchScreen(screen === "end" ? "end" : "match");
+    setScreen("newMatchOptions");
+  };
+
+  const cancelNewMatch = () => {
+    setScreen(preNewMatchScreen);
+  };
+
+  const resetMatchState = () => {
     setMatch(createMatch());
     setHistory([]);
     setFinishedMatch(null);
+  };
+
+  const keepSameTeams = () => {
+    resetMatchState();
+    setScreen("match");
+  };
+
+  const shuffleTeams = () => {
+    const indices = [0, 1, 2, 3];
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    setTeamA([indices[0], indices[1]]);
+    setTeamB([indices[2], indices[3]]);
+    resetMatchState();
+    setScreen("teams");
+  };
+
+  const newPlayers = () => {
+    resetMatchState();
     setScreen("setup");
   };
 
@@ -214,7 +251,7 @@ function App() {
             >
               Undo
             </button>
-            <button className="secondary" onClick={newMatch}>
+            <button className="secondary" onClick={openNewMatchOptions}>
               New Match
             </button>
           </div>
@@ -244,10 +281,31 @@ function App() {
           </div>
 
           <div className="button-row">
-            <button className="primary" onClick={newMatch}>
+            <button className="primary" onClick={openNewMatchOptions}>
               New Match
             </button>
           </div>
+        </div>
+      )}
+
+      {screen === "newMatchOptions" && (
+        <div className="card">
+          <h2>New Match</h2>
+          <p className="hint">How do you want to set up teams?</p>
+          <button className="primary" onClick={keepSameTeams}>
+            Keep Same Teams
+          </button>
+          <button className="secondary" onClick={shuffleTeams}>
+            Shuffle Teams
+          </button>
+          <button className="secondary" onClick={newPlayers}>
+            New Players
+          </button>
+          {preNewMatchScreen === "match" && (
+            <button className="secondary" onClick={cancelNewMatch}>
+              Cancel
+            </button>
+          )}
         </div>
       )}
     </div>
