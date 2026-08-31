@@ -99,8 +99,8 @@ button:disabled {
 .winner-banner {
   padding: 14px;
   border-radius: 10px;
-  background: var(--accent-bg);
-  border: 1px solid var(--accent-border);
+  background: var(--accent-2-bg);
+  border: 1px solid var(--accent-2-border);
   color: var(--text-h);
   font-weight: 600;
   font-size: 17px;
