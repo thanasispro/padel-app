@@ -109,7 +109,7 @@ function App() {
     setScreen("match");
   };
 
-  const shuffleTeams = () => {
+  const shuffleTeamAssignment = () => {
     const indices = [0, 1, 2, 3];
     for (let i = indices.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -117,6 +117,10 @@ function App() {
     }
     setTeamA([indices[0], indices[1]]);
     setTeamB([indices[2], indices[3]]);
+  };
+
+  const shuffleTeams = () => {
+    shuffleTeamAssignment();
     resetMatchState();
     setScreen("teams");
   };
@@ -138,21 +142,45 @@ function App() {
       {screen === "setup" && (
         <div className="card">
           <h2>Players</h2>
-          {names.map((name, i) => (
-            <input
-              key={i}
-              className="name-input"
-              placeholder={`Player ${i + 1}`}
-              value={name}
-              onChange={(e) => setName(i, e.target.value)}
-            />
-          ))}
+          <div className="teams-row">
+            <div className="team-col">
+              <h3>Team A</h3>
+              {teamA.map((i) => (
+                <input
+                  key={i}
+                  className="name-input"
+                  placeholder={`Player ${i + 1}`}
+                  value={names[i]}
+                  onChange={(e) => setName(i, e.target.value)}
+                />
+              ))}
+            </div>
+            <div className="team-col">
+              <h3>Team B</h3>
+              {teamB.map((i) => (
+                <input
+                  key={i}
+                  className="name-input"
+                  placeholder={`Player ${i + 1}`}
+                  value={names[i]}
+                  onChange={(e) => setName(i, e.target.value)}
+                />
+              ))}
+            </div>
+          </div>
           <button
             className="primary"
             disabled={!allNamesFilled}
             onClick={startTeams}
           >
             Continue
+          </button>
+          <button
+            className="secondary"
+            disabled={!allNamesFilled}
+            onClick={shuffleTeamAssignment}
+          >
+            Shuffle Teams
           </button>
         </div>
       )}
