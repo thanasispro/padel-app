@@ -2,15 +2,23 @@ import { useState } from "react";
 import {
   createMatch,
   matchWinner,
+  pointLabel,
   scorePoint,
   setsWon,
   type MatchState,
+  type ScoringMode,
   type TeamKey,
 } from "./scoring";
 import { getLastPlayers, saveMatch, type SavedMatch } from "./history";
 import "./App.css";
 
-type Screen = "setup" | "teams" | "match" | "end" | "newMatchOptions";
+type Screen =
+  | "setup"
+  | "teams"
+  | "match"
+  | "end"
+  | "newMatchOptions"
+  | "settings";
 
 function App() {
   const [screen, setScreen] = useState<Screen>("setup");
@@ -19,6 +27,9 @@ function App() {
   );
   const [teamA, setTeamA] = useState<[number, number]>([0, 1]);
   const [teamB, setTeamB] = useState<[number, number]>([2, 3]);
+  const [mode, setMode] = useState<ScoringMode>("set");
+  const [advantage, setAdvantage] = useState(true);
+  const [raceToSix, setRaceToSix] = useState(false);
   const [match, setMatch] = useState<MatchState>(createMatch());
   const [history, setHistory] = useState<MatchState[]>([]);
   const [finishedMatch, setFinishedMatch] = useState<SavedMatch | null>(null);
@@ -41,19 +52,8 @@ function App() {
     setScreen("teams");
   };
 
-  const swapPlayers = (aIndexInTeam: 0 | 1, bIndexInTeam: 0 | 1) => {
-    const aPlayer = teamA[aIndexInTeam];
-    const bPlayer = teamB[bIndexInTeam];
-    const newA: [number, number] = [...teamA] as [number, number];
-    const newB: [number, number] = [...teamB] as [number, number];
-    newA[aIndexInTeam] = bPlayer;
-    newB[bIndexInTeam] = aPlayer;
-    setTeamA(newA);
-    setTeamB(newB);
-  };
-
   const startMatch = () => {
-    setMatch(createMatch());
+    setMatch(createMatch({ mode, advantage, raceToSix }));
     setHistory([]);
     setScreen("match");
   };
@@ -104,7 +104,7 @@ function App() {
   };
 
   const resetMatchState = () => {
-    setMatch(createMatch());
+    setMatch(createMatch({ mode, advantage, raceToSix }));
     setHistory([]);
     setFinishedMatch(null);
   };
@@ -142,7 +142,7 @@ function App() {
 
   return (
     <div className="app">
-      <h1>Padel Match</h1>
+      <h1>Match Point</h1>
 
       {screen === "setup" && (
         <div className="card">
@@ -193,33 +193,90 @@ function App() {
         </div>
       )}
 
+      {screen === "settings" && (
+        <div className="card">
+          <h2>Settings</h2>
+
+          <h3>Scoring</h3>
+          <div className="mode-toggle">
+            <button
+              type="button"
+              className={mode === "set" ? "toggle-btn active" : "toggle-btn"}
+              onClick={() => setMode("set")}
+            >
+              Set Mode
+            </button>
+            <button
+              type="button"
+              className={
+                mode === "point" ? "toggle-btn active" : "toggle-btn"
+              }
+              onClick={() => setMode("point")}
+            >
+              Point Mode
+            </button>
+          </div>
+          {mode === "point" && (
+            <div className="mode-toggle">
+              <button
+                type="button"
+                className={advantage ? "toggle-btn active" : "toggle-btn"}
+                onClick={() => setAdvantage(true)}
+              >
+                Advantage
+              </button>
+              <button
+                type="button"
+                className={!advantage ? "toggle-btn active" : "toggle-btn"}
+                onClick={() => setAdvantage(false)}
+              >
+                Golden Point
+              </button>
+            </div>
+          )}
+
+          <h3>Set Rule</h3>
+          <div className="mode-toggle">
+            <button
+              type="button"
+              className={!raceToSix ? "toggle-btn active" : "toggle-btn"}
+              onClick={() => setRaceToSix(false)}
+            >
+              Standard
+            </button>
+            <button
+              type="button"
+              className={raceToSix ? "toggle-btn active" : "toggle-btn"}
+              onClick={() => setRaceToSix(true)}
+            >
+              First to 6
+            </button>
+          </div>
+
+          <button className="primary" onClick={() => setScreen("teams")}>
+            Back
+          </button>
+        </div>
+      )}
+
       {screen === "teams" && (
         <div className="card">
           <h2>Teams</h2>
-          <p className="hint">Tap a player to swap them with their opposite number on the other team.</p>
           <div className="teams-row">
             <div className="team-col">
               <h3>Team A</h3>
-              {([0, 1] as const).map((slot) => (
-                <button
-                  key={slot}
-                  className="player-chip"
-                  onClick={() => swapPlayers(slot, slot)}
-                >
-                  {names[teamA[slot]]}
-                </button>
+              {teamA.map((i) => (
+                <div key={i} className="player-chip">
+                  {names[i]}
+                </div>
               ))}
             </div>
             <div className="team-col">
               <h3>Team B</h3>
-              {([0, 1] as const).map((slot) => (
-                <button
-                  key={slot}
-                  className="player-chip"
-                  onClick={() => swapPlayers(slot, slot)}
-                >
-                  {names[teamB[slot]]}
-                </button>
+              {teamB.map((i) => (
+                <div key={i} className="player-chip">
+                  {names[i]}
+                </div>
               ))}
             </div>
           </div>
@@ -231,6 +288,9 @@ function App() {
               Start Match
             </button>
           </div>
+          <button className="secondary" onClick={() => setScreen("settings")}>
+            Settings
+          </button>
         </div>
       )}
 
@@ -240,9 +300,16 @@ function App() {
             <div className="team-score">
               <div className="team-label">{teamName("a")}</div>
               <div className="games">
-                {match.tiebreak ? match.tiebreak.a : match.games.a}
+                {match.tiebreak
+                  ? match.tiebreak.a
+                  : match.mode === "point" && match.points
+                    ? pointLabel(match.points.a, match.points.b)
+                    : match.games.a}
               </div>
               {match.tiebreak && <div className="tb-tag">tiebreak</div>}
+              {!match.tiebreak && match.mode === "point" && (
+                <div className="tb-tag">games {match.games.a}</div>
+              )}
             </div>
             <div className="sets-summary">
               {setsWon(match.sets, "a")} - {setsWon(match.sets, "b")}
@@ -250,9 +317,16 @@ function App() {
             <div className="team-score">
               <div className="team-label">{teamName("b")}</div>
               <div className="games">
-                {match.tiebreak ? match.tiebreak.b : match.games.b}
+                {match.tiebreak
+                  ? match.tiebreak.b
+                  : match.mode === "point" && match.points
+                    ? pointLabel(match.points.b, match.points.a)
+                    : match.games.b}
               </div>
               {match.tiebreak && <div className="tb-tag">tiebreak</div>}
+              {!match.tiebreak && match.mode === "point" && (
+                <div className="tb-tag">games {match.games.b}</div>
+              )}
             </div>
           </div>
 
