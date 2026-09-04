@@ -632,13 +632,18 @@ function App() {
                 ))}
               </>
             )}
-            <button
-              className="primary"
-              onClick={rematchLastTeams}
-              disabled={!rematchSource}
-            >
-              Rematch Last Teams
-            </button>
+            <div className="button-row">
+              <button className="secondary" onClick={() => setScreen("setup")}>
+                Home
+              </button>
+              <button
+                className="primary"
+                onClick={rematchLastTeams}
+                disabled={!rematchSource}
+              >
+                Rematch Last Teams
+              </button>
+            </div>
           </div>
         )}
       </div>
